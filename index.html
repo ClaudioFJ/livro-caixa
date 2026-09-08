@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Livro-Caixa · Controle de Gastos Pessoais</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="pagina">
+
+  <!-- ===================== CABEÇALHO ===================== -->
+  <header class="cabecalho">
+    <div class="cabecalho__marca">
+      <span class="cabecalho__selo">$</span>
+      <div>
+        <h1 class="cabecalho__titulo">Livro-Caixa</h1>
+        <p class="cabecalho__subtitulo">seu controle de entradas e saídas</p>
+      </div>
+    </div>
+    <button id="btnTema" class="botao-tema" type="button" aria-label="Alternar tema claro e escuro">
+      <span aria-hidden="true">◐</span> Tema
+    </button>
+  </header>
+
+  <!-- ===================== RESUMO / TOTAIS ===================== -->
+  <section class="resumo" aria-label="Resumo financeiro">
+    <div class="resumo__item resumo__item--entrada">
+      <span class="resumo__rotulo">Total de entradas</span>
+      <span class="resumo__valor" id="totalEntradas">R$ 0,00</span>
+    </div>
+    <div class="resumo__item resumo__item--saida">
+      <span class="resumo__rotulo">Total de saídas</span>
+      <span class="resumo__valor" id="totalSaidas">R$ 0,00</span>
+    </div>
+    <div class="resumo__item resumo__item--saldo">
+      <span class="resumo__rotulo">Saldo final</span>
+      <span class="resumo__valor" id="saldoFinal">R$ 0,00</span>
+    </div>
+  </section>
+
+  <div class="conteudo">
+
+    <!-- ===================== FORMULÁRIO ===================== -->
+    <section class="painel painel--formulario" aria-label="Cadastro de movimentação">
+      <h2 class="painel__titulo" id="tituloFormulario">Nova movimentação</h2>
+
+      <form id="formMovimentacao" novalidate>
+        <input type="hidden" id="movimentacaoId">
+
+        <div class="campo campo--segmentado">
+          <span class="campo__rotulo">Tipo</span>
+          <div class="segmentado" role="radiogroup" aria-label="Tipo de movimentação">
+            <button type="button" class="segmentado__opcao is-ativo" data-tipo="entrada">↑ Entrada</button>
+            <button type="button" class="segmentado__opcao" data-tipo="saida">↓ Saída</button>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="descricao" class="campo__rotulo">Descrição</label>
+          <input type="text" id="descricao" placeholder="Ex.: Salário, Mercado, Aluguel..." maxlength="60">
+        </div>
+
+        <div class="campo">
+          <label for="categoria" class="campo__rotulo">Categoria</label>
+          <select id="categoria">
+            <option value="" disabled selected>Selecione...</option>
+            <optgroup label="Entradas" id="grupoEntradas">
+              <option>Salário</option>
+              <option>Freelance</option>
+              <option>Investimentos</option>
+              <option>Outras entradas</option>
+            </optgroup>
+            <optgroup label="Saídas" id="grupoSaidas" hidden>
+              <option>Alimentação</option>
+              <option>Moradia</option>
+              <option>Transporte</option>
+              <option>Lazer</option>
+              <option>Saúde</option>
+              <option>Educação</option>
+              <option>Outras saídas</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="valor" class="campo__rotulo">Valor (R$)</label>
+          <input type="number" id="valor" placeholder="0,00" min="0.01" step="0.01" inputmode="decimal">
+        </div>
+
+        <p class="mensagem-erro" id="mensagemErro" role="alert" hidden></p>
+
+        <div class="acoes-formulario">
+          <button type="submit" class="botao botao--primario" id="btnSalvar">Adicionar movimentação</button>
+          <button type="button" class="botao botao--secundario" id="btnCancelar" hidden>Cancelar edição</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ===================== LISTA + GRÁFICO ===================== -->
+    <section class="painel painel--lista" aria-label="Movimentações cadastradas">
+      <div class="painel__cabecalho">
+        <h2 class="painel__titulo">Movimentações</h2>
+        <div class="filtros">
+          <select id="filtroTipo" aria-label="Filtrar por tipo">
+            <option value="todos">Todos os tipos</option>
+            <option value="entrada">Somente entradas</option>
+            <option value="saida">Somente saídas</option>
+          </select>
+          <input type="search" id="filtroBusca" placeholder="Buscar por descrição...">
+        </div>
+      </div>
+
+      <div class="tabela-cabecalho" aria-hidden="true">
+        <span>Descrição</span>
+        <span>Categoria</span>
+        <span>Data</span>
+        <span>Valor</span>
+        <span></span>
+      </div>
+
+      <ul id="listaMovimentacoes" class="lista-movimentacoes"></ul>
+
+      <p id="listaVazia" class="lista-vazia" hidden>Nenhuma movimentação por aqui ainda. Cadastre a primeira ao lado.</p>
+
+      <div class="grafico-caixa">
+        <canvas id="graficoCategorias" height="220" aria-label="Gráfico de saídas por categoria" role="img"></canvas>
+        <p id="graficoVazio" class="lista-vazia" hidden>Registre saídas para ver a distribuição por categoria.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="rodape">
+    Dados salvos automaticamente no seu navegador (localStorage).
+  </footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

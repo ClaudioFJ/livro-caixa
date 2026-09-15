@@ -303,7 +303,7 @@ input:focus, select:focus {
 
 .tabela-cabecalho {
   display: grid;
-  grid-template-columns: 2fr 1.3fr 1fr 1fr 70px;
+  grid-template-columns: 1.8fr 1.1fr 1fr 0.9fr 1fr 70px;
   padding: 10px 8px;
   margin-top: 12px;
   font-size: 11px;
@@ -321,7 +321,7 @@ input:focus, select:focus {
 
 .item-movimentacao {
   display: grid;
-  grid-template-columns: 2fr 1.3fr 1fr 1fr 70px;
+  grid-template-columns: 1.8fr 1.1fr 1fr 0.9fr 1fr 70px;
   align-items: center;
   padding: 12px 8px;
   border-bottom: 1px solid var(--cor-linha);
@@ -330,9 +330,19 @@ input:focus, select:focus {
 
 .item-movimentacao__descricao { font-weight: 500; }
 
-.item-movimentacao__categoria {
+.item-movimentacao__categoria,
+.item-movimentacao__conta {
   color: var(--cor-tinta-suave);
   font-size: 13px;
+}
+
+.item-movimentacao__conta {
+  display: inline-block;
+  width: fit-content;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--cor-linha);
+  font-size: 11px;
 }
 
 .item-movimentacao__data {
@@ -377,10 +387,103 @@ input:focus, select:focus {
   padding: 32px 12px;
 }
 
+.graficos-grade {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--cor-linha);
+}
+
+.grafico-caixa__titulo {
+  font-family: var(--fonte-serif);
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+/* ==========================================================================
+   PAINEL DE INVESTIMENTOS (Yahoo Finance)
+   ========================================================================== */
+.painel--investimentos {
+  margin-top: 24px;
+}
+
+.painel__descricao {
+  color: var(--cor-tinta-suave);
+  font-size: 13px;
+  margin: 0 0 16px;
+}
+.painel__descricao code {
+  font-family: var(--fonte-mono);
+  background: var(--cor-papel-alt);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.form-ticker {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.form-ticker input {
+  flex: 1;
+  text-transform: uppercase;
+}
+.form-ticker .botao { flex-shrink: 0; }
+
+.lista-watchlist {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+
+.item-ativo {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--cor-linha);
+}
+
+.item-ativo__ticker {
+  font-family: var(--fonte-mono);
+  font-weight: 600;
+}
+
+.item-ativo__preco {
+  font-family: var(--fonte-mono);
+  font-weight: 600;
+  min-width: 90px;
+  text-align: right;
+}
+
+.item-ativo__variacao {
+  font-family: var(--fonte-mono);
+  font-size: 13px;
+  min-width: 70px;
+  text-align: right;
+}
+.item-ativo__variacao--positiva { color: var(--cor-entrada); }
+.item-ativo__variacao--negativa { color: var(--cor-saida); }
+
+.item-ativo__status {
+  color: var(--cor-tinta-suave);
+  font-size: 12px;
+  font-style: italic;
+}
+
 .grafico-caixa {
   margin-top: 24px;
   padding-top: 20px;
   border-top: 1px solid var(--cor-linha);
+}
+.grafico-caixa--investimento {
+  border-top: none;
+  margin-top: 16px;
+  padding-top: 0;
 }
 
 .rodape {
@@ -407,16 +510,33 @@ input:focus, select:focus {
     grid-template-areas:
       "descricao acoes"
       "categoria acoes"
+      "conta conta"
       "data valor";
     row-gap: 4px;
   }
   .item-movimentacao__descricao { grid-area: descricao; }
   .item-movimentacao__categoria { grid-area: categoria; }
+  .item-movimentacao__conta { grid-area: conta; }
   .item-movimentacao__data { grid-area: data; }
   .item-movimentacao__valor { grid-area: valor; text-align: left; }
   .item-movimentacao__acoes { grid-area: acoes; align-self: start; }
   .painel__cabecalho { flex-direction: column; align-items: stretch; }
   .filtros { flex-direction: column; }
+  .graficos-grade { grid-template-columns: 1fr; }
+  .form-ticker { flex-direction: column; }
+  .item-ativo {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "ticker acoes"
+      "preco variacao"
+      "status status";
+    row-gap: 4px;
+  }
+  .item-ativo__ticker { grid-area: ticker; }
+  .item-ativo__preco { grid-area: preco; text-align: left; }
+  .item-ativo__variacao { grid-area: variacao; text-align: left; }
+  .item-ativo__status { grid-area: status; }
+  .item-ativo__acoes { grid-area: acoes; }
 }
 
 @media (prefers-reduced-motion: reduce) {

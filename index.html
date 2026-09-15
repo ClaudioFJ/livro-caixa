@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -92,6 +92,17 @@
           <input type="number" id="valor" placeholder="0,00" min="0.01" step="0.01" inputmode="decimal">
         </div>
 
+        <div class="campo">
+          <label for="conta" class="campo__rotulo">Conta</label>
+          <select id="conta">
+            <option value="" disabled selected>Selecione...</option>
+            <option>Conta Corrente</option>
+            <option>Poupança</option>
+            <option>Investimentos</option>
+            <option>Carteira</option>
+          </select>
+        </div>
+
         <p class="mensagem-erro" id="mensagemErro" role="alert" hidden></p>
 
         <div class="acoes-formulario">
@@ -111,6 +122,13 @@
             <option value="entrada">Somente entradas</option>
             <option value="saida">Somente saídas</option>
           </select>
+          <select id="filtroConta" aria-label="Filtrar por conta">
+            <option value="todas">Todas as contas</option>
+            <option>Conta Corrente</option>
+            <option>Poupança</option>
+            <option>Investimentos</option>
+            <option>Carteira</option>
+          </select>
           <input type="search" id="filtroBusca" placeholder="Buscar por descrição...">
         </div>
       </div>
@@ -118,6 +136,7 @@
       <div class="tabela-cabecalho" aria-hidden="true">
         <span>Descrição</span>
         <span>Categoria</span>
+        <span>Conta</span>
         <span>Data</span>
         <span>Valor</span>
         <span></span>
@@ -127,13 +146,47 @@
 
       <p id="listaVazia" class="lista-vazia" hidden>Nenhuma movimentação por aqui ainda. Cadastre a primeira ao lado.</p>
 
-      <div class="grafico-caixa">
-        <canvas id="graficoCategorias" height="220" aria-label="Gráfico de saídas por categoria" role="img"></canvas>
-        <p id="graficoVazio" class="lista-vazia" hidden>Registre saídas para ver a distribuição por categoria.</p>
+      <div class="graficos-grade">
+        <div class="grafico-caixa">
+          <h3 class="grafico-caixa__titulo">Saídas por categoria</h3>
+          <canvas id="graficoCategorias" height="220" aria-label="Gráfico de saídas por categoria" role="img"></canvas>
+          <p id="graficoVazio" class="lista-vazia" hidden>Registre saídas para ver a distribuição por categoria.</p>
+        </div>
+        <div class="grafico-caixa">
+          <h3 class="grafico-caixa__titulo">Entradas x saídas por mês</h3>
+          <canvas id="graficoMensal" height="220" aria-label="Gráfico de entradas e saídas por mês" role="img"></canvas>
+          <p id="graficoMensalVazio" class="lista-vazia" hidden>Cadastre movimentações para ver a comparação mensal.</p>
+        </div>
       </div>
     </section>
 
   </div>
+
+  <!-- ===================== INVESTIMENTOS (YAHOO FINANCE) ===================== -->
+  <section class="painel painel--investimentos" aria-label="Cotações de investimentos">
+    <div class="painel__cabecalho">
+      <h2 class="painel__titulo">Investimentos · cotações (Yahoo Finance)</h2>
+    </div>
+    <p class="painel__descricao">
+      Acompanhe cotações reais de ações e fundos. Ex.: <code>PETR4.SA</code>, <code>VALE3.SA</code>,
+      <code>AAPL</code>, <code>MSFT</code>. Para índices, use o acento circunflexo: <code>^BVSP</code>, <code>^GSPC</code>, <code>^VIX</code>.
+    </p>
+
+    <form id="formTicker" class="form-ticker">
+      <input type="text" id="inputTicker" placeholder="Digite um ticker, ex.: PETR4.SA" autocomplete="off">
+      <button type="submit" class="botao botao--primario">Adicionar</button>
+    </form>
+
+    <p class="mensagem-erro" id="mensagemErroTicker" role="alert" hidden></p>
+
+    <ul id="listaWatchlist" class="lista-watchlist"></ul>
+    <p id="watchlistVazia" class="lista-vazia">Nenhum ativo acompanhado ainda. Adicione um ticker acima.</p>
+
+    <div class="grafico-caixa grafico-caixa--investimento" id="caixaGraficoInvestimento" hidden>
+      <h3 class="grafico-caixa__titulo" id="tituloGraficoInvestimento">Histórico</h3>
+      <canvas id="graficoInvestimento" height="220" aria-label="Histórico de preço do ativo" role="img"></canvas>
+    </div>
+  </section>
 
   <footer class="rodape">
     Dados salvos automaticamente no seu navegador (localStorage).

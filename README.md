@@ -39,10 +39,22 @@ To-Do List:
   tipo: "entrada" | "saida",
   descricao: "Salário",
   categoria: "Salário",
+  conta: "Conta Corrente" | "Poupança" | "Investimentos" | "Carteira",
   valor: 3500,
   data: "2026-09-08T13:45:00.000Z"
 }
 ```
+
+A watchlist de investimentos segue o mesmo espírito, mas mais simples —
+um array de strings persistido à parte:
+
+```js
+watchlist = ["PETR4.SA", "AAPL"];
+```
+
+As cotações em si (`cotacoes`) **não são persistidas**: são dados vivos,
+buscados de novo a cada vez que a página carrega, guardados só em memória
+no formato `{ [ticker]: { preco, variacaoPct, historico, carregando, erro } }`.
 
 O array inteiro é persistido em `localStorage` (`JSON.stringify` /
 `JSON.parse`) a cada alteração, então os dados sobrevivem a um F5 ou ao
@@ -72,7 +84,9 @@ o que possibilita usar `map`/`filter`/`reduce` de forma limpa.
 | **Spread Operator** | `{ ...acumulador, [chave]: ... }` dentro dos `reduce` | Evita mutar o acumulador a cada iteração |
 | **Arrow functions** | Praticamente todas as funções do arquivo (`const nome = (parametros) => {...}`) | Padrão de escrita adotado em todo o projeto, igual à To-Do List |
 | **Funções puras** | `validarMovimentacao`, `calcularTotais`, `formatarMoeda`, `filtrarMovimentacoes` | Recebem dados e devolvem dados, sem tocar no DOM — fáceis de ler e testar isoladamente |
-| **Delegação de evento** | `els.lista.addEventListener('click', ...)` | Um único listener no `<ul>` trata clique em "editar" e "excluir" de qualquer item, mesmo os criados depois |
+| **Delegação de evento** | `els.lista.addEventListener('click', ...)` e `els.listaWatchlist.addEventListener('click', ...)` | Um único listener no `<ul>` trata clique em "editar"/"excluir" (ou "gráfico"/"atualizar"/"remover", na watchlist) de qualquer item, mesmo os criados depois |
+| **`async`/`await` + `fetch`** | `buscarCotacaoYahoo`, `atualizarCotacao` | Busca a cotação do ativo no Yahoo Finance sem travar a interface enquanto espera a resposta |
+| **`reduce()`** | `agruparPorMes` | Agrupa entradas e saídas por mês num objeto `{ "2026-09": { entradas, saidas } }`, para o gráfico de barras |
 
 ## Organização das responsabilidades
 
@@ -105,12 +119,47 @@ seção 3, e a tela só é redesenhada por completo através de `atualizarTela()
 
 ## Diferenciais implementados
 
-- **`localStorage`**: os dados persistem entre sessões.
-- **Filtro por tipo e por texto de busca** na lista de movimentações.
+- **`localStorage`**: os dados (movimentações, tema e watchlist de investimentos) persistem entre sessões.
+- **Campo "Conta"**: cada movimentação indica se o dinheiro está/saiu de Conta Corrente, Poupança, Investimentos ou Carteira. Filtro dedicado por conta na lista.
+- **Filtro por tipo, conta e texto de busca** na lista de movimentações.
 - **Categorias por tipo**: o `<select>` de categoria muda conforme Entrada/Saída.
 - **Gráfico de rosca (Chart.js)** com a distribuição das saídas por categoria.
+- **Gráfico de barras (Chart.js)** comparando entradas x saídas mês a mês.
+- **Investimentos (Yahoo Finance)**: painel para acompanhar cotações reais de ações/fundos (ex.: `PETR4.SA`, `AAPL`) com preço, variação percentual e gráfico de linha do histórico de 1 mês (Chart.js).
 - **Dark mode**, com preferência salva no `localStorage`.
 - **Responsividade**: layout em duas colunas no desktop e empilhado no celular, com a tabela virando "cartões" em telas pequenas.
+
+### Sobre a integração com Yahoo Finance
+
+A API pública do Yahoo Finance (`query1.finance.yahoo.com`) não libera CORS
+para chamadas feitas direto do navegador. Como esta é uma aplicação
+100% front-end (sem backend), a chamada é feita através de **proxies CORS
+públicos**, com fallback automático — se um estiver fora do ar ou mudar de
+política (o que acontece com frequência nesse tipo de serviço gratuito), o
+código tenta o próximo da lista antes de desistir:
+
+```js
+const PROXIES_CORS = [
+  (urlAlvo) => `https://api.allorigins.win/raw?url=${encodeURIComponent(urlAlvo)}`,
+  (urlAlvo) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(urlAlvo)}`,
+  (urlAlvo) => `https://corsproxy.io/?url=${encodeURIComponent(urlAlvo)}`,
+];
+```
+
+Isso é suficiente para fins pessoais/acadêmicos, mas **não é recomendado
+para um projeto em produção** — nesse cenário o correto é ter um pequeno
+backend próprio fazendo essa chamada (evitando depender de proxies
+públicos de terceiros, que podem ficar fora do ar ou mudar de
+comportamento sem aviso — o que já aconteceu durante o desenvolvimento
+deste projeto).
+
+Novas técnicas de JS usadas nessa parte:
+- **`async`/`await`** e **`fetch`** para buscar dados externos sem travar a interface.
+- **`try/catch` dentro de um `for...of`** (`buscarComFallbackDeProxy`) para tentar vários proxies em sequência até um dar certo.
+- **`try/catch`** para tratar erros de rede ou ticker inválido e mostrar isso ao usuário.
+- **Destructuring com renomeação e rest** (`const { [ticker]: _removido, ...restante } = cotacoes`) para remover uma chave de um objeto sem mutá-lo, ao excluir um ativo da watchlist.
+
+> Tickers de índices usam `^` na frente: `^BVSP` (Ibovespa), `^GSPC` (S&P 500), `^VIX`.
 
 ## Protótipo (Figma)
 
